@@ -36,13 +36,17 @@
                                     <field name="sip_password"/>
                                 </div>
                                 <div class="row mt16">
-                                    <label for="sip_api_key" string="Apikey" class="col-lg-3"/>
-                                    <field name="sip_api_key"/>
+                                    <label for="sip_qr_apikey" string="QR Apikey" class="col-lg-3"/>
+                                    <field name="sip_qr_apikey"/>
                                 </div>
                             </div>
                         </setting>
                         <setting string="Token">
                             <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="sip_auth_apikey" string="Auth Apikey" class="col-lg-3"/>
+                                    <field name="sip_auth_apikey"/>
+                                </div>
                                 <div class="row mt16">
                                     <label for="sip_auth_token" string="Authorization" class="col-lg-3"/>
                                     <field name="sip_auth_token"/>

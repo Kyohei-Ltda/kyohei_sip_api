@@ -21,7 +21,8 @@ class KyoheiBankIntegrationsCompany(models.Model):
     )
     sip_username = fields.Char(string="Sip Username")
     sip_password = fields.Char(string="Sip Password")
-    sip_api_key = fields.Char(string="Sip apikey")
+    sip_auth_apikey = fields.Char(string="Sip Auth apikey")
+    sip_qr_apikey = fields.Char(string="Sip Qr apikey")
     sip_auth_token = fields.Text(string='Autorización SIP')
     sip_auth_duration = fields.Datetime(string='SIP Auth Duration')
 
@@ -31,7 +32,7 @@ class KyoheiBankIntegrationsCompany(models.Model):
             sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_bank_integrations.{sip_url_param}")
             url = sip_url + '/autenticacion/v1/generarToken'
             headers = {
-                'apikey': record.sip_api_key,
+                'apikey': record.sip_auth_apikey,
                 'Content-Type': 'application/json'
             }
             data = {

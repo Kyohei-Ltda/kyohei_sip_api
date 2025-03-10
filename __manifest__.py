@@ -25,5 +25,6 @@ Después de instalar el módulo obtendrá:
         'data/server_action_data.xml',
         # 'security/ir.model.access.csv',
         'settings/settings_view.xml',
+        'views/account_move_view.xml',
     ]
 }

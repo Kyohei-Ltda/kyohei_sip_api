@@ -7,26 +7,25 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <header position="inside">
-                <header name="electronic_sale_header" invisible="billing_mode not in ['1', '2', 'manual'] or move_type not in ['out_refund', 'out_invoice'] or state not in ['posted', 'cancel'] or (billing_mode == 'manual' and not cuf)">
-                    <field name="siat_state" widget="statusbar" statusbar_visible="to_send,sent"/>
-                    <button name="notify_electronic_operation"
-                            string="Notificar emisión"
-                            type="object"
-                            class="oe_highlight btn-primary"
-                            invisible="is_invoice_sent or state not in ['posted'] or siat_state not in ['sent']"/>
-                    <button name="notify_electronic_operation"
-                            string="Notificar anulación"
-                            type="object"
-                            class="oe_highlight btn-warning"
-                            invisible="state not in ['posted', 'cancel'] or siat_state not in ['cancelled']"/>
-                    <button name="action_verify_siat_registration"
-                            string="Verificar registro"
-                            type="object"
-                            class="oe_highlight btn-primary"
-                            invisible="state != 'posted'"
-                            groups="account.group_account_manager"/>
-                </header>
+                <button name="action_get_sip_qr"
+                        string="Generar SIP"
+                        type="object"
+                        class="oe_highlight btn-primary"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image != False"/>
+                <button name="action_revoke_sip_qr"
+                        string="Revocar SIP"
+                        type="object"
+                        class="oe_highlight btn-primary"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image == False"/>
+                <button name="action_check_sip_payment"
+                        string="Consulta SIP"
+                        type="object"
+                        class="oe_highlight btn-primary"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image == False"/>
             </header>
+            <xpath expr="//form/sheet/*[1]" position="before">
+                <field name="sip_qr_image" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;: &quot;avatar_128&quot;}"/>
+            </xpath>
         </field>
     </record>
 
