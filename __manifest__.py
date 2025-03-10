@@ -22,8 +22,8 @@ Después de instalar el módulo obtendrá:
     'depends': ['account'],
     'license': 'Other proprietary',
     'data': [
+        'data/server_action_data.xml',
         # 'security/ir.model.access.csv',
         'settings/settings_view.xml',
-
     ]
 }
