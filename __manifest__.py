@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Integraciones bancarias",
+    'name': "Integración SIP",
 
     'summary': """
-    Integre su Odoo con las API de los bancos de Bolivia
+    Integre su Odoo con las API SIP para cobros QR
     """,
 
     'description': """
-Aproveche las integraciones de los bancos en Bolivia
+Aproveche las integraciones con SIP para sus cobros
 ================================================================================
 
 Después de instalar el módulo obtendrá:
-    * Generación de códigos QR para cobros por sus servicios
+    * Generación de códigos QR para cobros
     * Extractos bancarios automáticamente conciliados
     """,
     'author': "Kyohei Ltda.",
@@ -22,9 +22,11 @@ Después de instalar el módulo obtendrá:
     'depends': ['account'],
     'license': 'Other proprietary',
     'data': [
+        'data/sequence_data.xml',
         'data/server_action_data.xml',
         'security/ir.model.access.csv',
         'settings/settings_view.xml',
         'views/account_move_view.xml',
+        'views/sip_qr_view.xml',
     ]
 }

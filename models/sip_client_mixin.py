@@ -20,7 +20,7 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
         return sip_url
 
     def _get_sip_callback(self):
-        return f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/endpoint/confirmaPago" or ''
+        return f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/sip/confirmaPago" or ''
 
     def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
         if self.company_id.sip_auth_duration < datetime.now():
@@ -53,7 +53,7 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
     def _get_sip_token(self):
         self.company_id.action_get_sip_auth_token()
 
-    sip_qr_id = fields.Many2one('sip.qr', string='QR SIP', copy=False)
+    sip_qr_id = fields.Many2one('sip.qr', string='QR SIP', copy=False, ondelete='set null')
 
     @staticmethod
     def _get_notification_action(operation, server_message):
@@ -79,6 +79,8 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
         operation = 'Generar QR'
         if sip_qr_enable_response.status_code == 200:
             response_data = sip_qr_enable_response.json()
+            currency_id = self.env['res.currency'].search([('name', '=', data_dict['moneda'])], limit=1)
+            expiration_date = datetime.strptime(data_dict['fechaVencimiento'], '%d/%m/%Y').date()
             if response_data['codigo'] == '0000':
                 sip_qr = json.loads(sip_qr_enable_response.content.decode('utf-8'))
                 qr_id = self.env['sip.qr'].create({
@@ -86,8 +88,8 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
                     'ref': data_dict['alias'],
                     'label': data_dict['detalleGlosa'],
                     'amount': data_dict['monto'],
-                    'currency_id': data_dict['moneda'],
-                    'date': data_dict['fechaVencimiento'],
+                    'currency_id': currency_id.id,
+                    'date': expiration_date,
                     'for_single_use': data_dict['unicoUso'],
                     'company_id': self.company_id.id,
                     'ob_destination_account': sip_qr['objeto']['cuentaDestino'],

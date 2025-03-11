@@ -10,6 +10,16 @@ _logger = logging.getLogger(__name__)
 class KyoheiBankIntegrationsSipQr(models.Model):
     _name = 'sip.qr'
     _description = 'SIP QR'
+    _rec_name = 'sequence_id'
+
+    sequence_id = fields.Char(readonly=True, string='Secuencia')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('sequence_id') or vals['sequence_id'] == '/':
+                vals['sequence_id'] = self.env['ir.sequence'].next_by_code('sip.qr.sequence') or '/'
+        return super(KyoheiBankIntegrationsSipQr, self).create(vals_list)
 
     state = fields.Selection(
         [('pendiente', 'Pendiente'),
@@ -23,12 +33,16 @@ class KyoheiBankIntegrationsSipQr(models.Model):
     ref = fields.Char(string='Alias')
     label = fields.Char(string='Detalle')
     amount = fields.Float(string='Monto')
-    currency_id = fields.Char(string='Divisa')
-    date = fields.Char(string='Fecha vencimiento')
+    currency_id = fields.Many2one('res.currency', string='Divisa')
+    date = fields.Date(string='Fecha vencimiento')
     for_single_use = fields.Boolean(string='Uso único')
     company_id = fields.Many2one('res.company', string='Company')
     journal_id = fields.Many2one('account.journal', string='Diario')
     ob_destination_account = fields.Char()
+
+    def _get_journal_id(self):
+        if self.ob_destination_account:
+            pass
 
     def _check_sip_state(self):
         sip_url = self.company_id._get_sip_url()

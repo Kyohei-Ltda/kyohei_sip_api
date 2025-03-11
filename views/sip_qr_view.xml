@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="kyohei_sip_qr_list">
+        <field name="name">sip.qr.list</field>
+        <field name="model">sip.qr</field>
+        <field name="type">list</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence_id"/>
+                <field name="state"/>
+                <field name="ref"/>
+                <field name="label"/>
+                <field name="amount"/>
+                <field name="currency_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="kyohei_sip_qr_form">
+        <field name="name">sip.qr.form</field>
+        <field name="model">sip.qr</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <div class="oe_button_box" name="button_box"/>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="sequence_id" class="oe_edit_only"/>
+                        <h1>
+                            <field name="sequence_id" placeholder="SIP_QR/....."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="ref"/>
+                        </group>
+                        <group>
+                            <field name="label"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="kyohei_sip_qr_search">
+        <field name="name">sip.qr.search</field>
+        <field name="model">sip.qr</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="sequence_id"/>
+                <field name="ref"/>
+                <field name="label"/>
+                <filter name="pending" string="Pendientes" domain="[('state','=','pendiente')]"/>
+                <filter name="disabled" string="Inhabilitados" domain="[('state','=','inhabilitado')]"/>
+                <filter name="error" string="Errados" domain="[('state','=','error')]"/>
+                <filter name="expired" string="Expirados" domain="[('state','=','expirado')]"/>
+                <separator/>
+            </search>
+        </field>
+    </record>
+
+    <record id="kyohei_bank_integrations.sip_qr_actions" model="ir.actions.act_window">
+        <field name="name">QR Sip</field>
+        <field name="res_model">sip.qr</field>
+        <field name="view_mode">list,form</field>
+        <field name="type">ir.actions.act_window</field>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="kyohei_sip_qr_view_list">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="kyohei_bank_integrations.kyohei_sip_qr_list"/>
+        <field name="act_window_id" ref="kyohei_bank_integrations.sip_qr_actions"/>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="kyohei_sip_qr_view_form">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="kyohei_bank_integrations.kyohei_sip_qr_form"/>
+        <field name="act_window_id" ref="kyohei_bank_integrations.sip_qr_actions"/>
+    </record>
+
+    <menuitem name="QR Sip"
+              id="kyohei_bank_integrations.sip_qr_menu"
+              parent="account.account_banks_menu"
+              action="kyohei_bank_integrations.sip_qr_actions"
+              sequence="10"/>
+
+</odoo>
