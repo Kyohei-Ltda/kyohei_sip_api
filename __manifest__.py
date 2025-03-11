@@ -23,7 +23,7 @@ Después de instalar el módulo obtendrá:
     'license': 'Other proprietary',
     'data': [
         'data/server_action_data.xml',
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'settings/settings_view.xml',
         'views/account_move_view.xml',
     ]

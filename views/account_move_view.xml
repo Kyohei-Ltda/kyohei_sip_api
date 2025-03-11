@@ -11,21 +11,24 @@
                         string="Generar SIP"
                         type="object"
                         class="oe_highlight btn-primary"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image != False"/>
+                        groups="base.group_no_one"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_id"/>
                 <button name="action_revoke_sip_qr"
                         string="Revocar SIP"
                         type="object"
                         class="oe_highlight btn-primary"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image == False"/>
+                        groups="base.group_no_one"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id"/>
                 <button name="action_check_sip_payment"
                         string="Consulta SIP"
                         type="object"
                         class="oe_highlight btn-primary"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_image == False"/>
+                        groups="base.group_no_one"
+                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id"/>
             </header>
-            <xpath expr="//form/sheet/*[1]" position="before">
-                <field name="sip_qr_image" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;: &quot;avatar_128&quot;}"/>
-            </xpath>
+            <field name="preferred_payment_method_line_id" position="after">
+                <field name="sip_qr_id" readonly="True"/>
+            </field>
         </field>
     </record>
 

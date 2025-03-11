@@ -10,7 +10,16 @@
         <field name="state">code</field>
         <field name="code">
 for record in records:
-    record._get_sip_auth_token()
+    server_response = record._get_sip_auth_token()
+    action = {
+        "type": "ir.actions.client",
+        "tag": "display_notification",
+        "params": {
+        "title": "Obtención token SIP",
+        "message": server_response,
+        "sticky": False,
+            }
+        }
         </field>
     </record>
 

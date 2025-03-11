@@ -4,8 +4,8 @@ import json
 
 import requests
 from odoo import models, fields
-from openpyxl.pivot import record
 import logging
+from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -23,6 +23,8 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
         return f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/endpoint/confirmaPago" or ''
 
     def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
+        if self.company_id.sip_auth_duration < datetime.now():
+            self.company_id._get_sip_auth_token()
         url = self._get_sip_url() + endpoint
         headers = {
             'apikeyServicio': self.company_id.sip_qr_apikey,
@@ -35,55 +37,86 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
             response = http_method(url=url, headers=headers, json=data_dict)
             _logger.info("SIP Token request status: %s", response.status_code)
             _logger.info("Response: %s", response.text)
-            if response.status_code == 200:
-                return response
-            else:
-                _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
-                return None
+            return response
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
-            return None
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": "Obtención token SIP",
+                    "message": e,
+                    "sticky": False,
+                }
+            }
 
     def _get_sip_token(self):
         self.company_id.action_get_sip_auth_token()
 
-    sip_qr_image = fields.Binary(string='QR SIP', copy=False)
+    sip_qr_id = fields.Many2one('sip.qr', string='QR SIP', copy=False)
 
-    def _enable_sip_qr(self, auth_token, data_dict):
+    @staticmethod
+    def _get_notification_action(operation, server_message):
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": operation,
+                "message": server_message,
+                "sticky": False,
+            }
+        }
+
+    def _enable_sip_qr(self, data_dict):
         endpoint = '/api/v1/generaQr'
-        header = {'Authorization': f'Bearer {auth_token}'}
+        header = {'Authorization': f'Bearer {self.company_id.sip_auth_token}'}
         sip_qr_enable_response = self._get_sip_response(
             endpoint=endpoint,
             server_method='post',
             header_dict=header,
             data_dict=data_dict
         )
-        if sip_qr_enable_response:
-            sip_qr = json.loads(sip_qr_enable_response.content.decode('utf-8'))['objeto']['imagenQr']
-            self.sip_qr_image = sip_qr
+        operation = 'Generar QR'
+        if sip_qr_enable_response.status_code == 200:
+            response_data = sip_qr_enable_response.json()
+            if response_data['codigo'] == '0000':
+                sip_qr = json.loads(sip_qr_enable_response.content.decode('utf-8'))
+                qr_id = self.env['sip.qr'].create({
+                    'qr_image': sip_qr['objeto']['imagenQr'],
+                    'ref': data_dict['alias'],
+                    'label': data_dict['detalleGlosa'],
+                    'amount': data_dict['monto'],
+                    'currency_id': data_dict['moneda'],
+                    'date': data_dict['fechaVencimiento'],
+                    'for_single_use': data_dict['unicoUso'],
+                    'company_id': self.company_id.id,
+                    'ob_destination_account': sip_qr['objeto']['cuentaDestino'],
+                    'state': 'pendiente'
+                })
+                self.write({'sip_qr_id': qr_id.id})
+            return self._get_notification_action(operation, response_data['mensaje'])
+        else:
+            _logger.error("Failed to get SIP QR. Status code: %s, Response: %s", sip_qr_enable_response.status_code, sip_qr_enable_response.text)
+            return self._get_notification_action(operation, sip_qr_enable_response.text)
 
-    def _disable_sip_qr(self, auth_token, data_dict):
+    def _disable_sip_qr(self, data_dict):
         endpoint = '/api/v1/inhabilitarPago'
-        header = {'Authorization': f'Bearer {auth_token}'}
+        header = {'Authorization': f'Bearer {self.company_id.sip_auth_token}'}
         sip_qr_disable_response = self._get_sip_response(
             endpoint=endpoint,
             server_method='post',
             header_dict=header,
             data_dict=data_dict
         )
-        if sip_qr_disable_response:
-            self.sip_qr_image = False
-
-    def _check_sip_state(self, auth_token, data_dict):
-        endpoint = '/api/v1/estadoTransaccion'
-        header = {'Authorization': f'Bearer {auth_token}'}
-        sip_qr_check_response = self._get_sip_response(
-            endpoint=endpoint,
-            server_method='post',
-            header_dict=header,
-            data_dict=data_dict
-        )
-        if sip_qr_check_response:
-            sip_qr = json.loads(sip_qr_check_response.content.decode('utf-8'))
+        operation = 'Deshabilitar QR'
+        if sip_qr_disable_response.status_code == 200:
+            response_data = sip_qr_disable_response.json()
+            if response_data['codigo'] == '0000':
+                self.sip_qr_id.write({'state': 'inhabilitado'})
+                self.sip_qr_id = False
+            return self._get_notification_action(operation, response_data['mensaje'])
+        else:
+            _logger.error("Failed to disable SIP QR. Status code: %s, Response: %s", sip_qr_disable_response.status_code, sip_qr_disable_response.text)
+            return self._get_notification_action(operation, sip_qr_disable_response.text)
 
 
