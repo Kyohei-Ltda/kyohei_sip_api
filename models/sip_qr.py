@@ -38,11 +38,20 @@ class KyoheiBankIntegrationsSipQr(models.Model):
     for_single_use = fields.Boolean(string='Uso único')
     company_id = fields.Many2one('res.company', string='Company')
     journal_id = fields.Many2one('account.journal', string='Diario')
-    ob_destination_account = fields.Char()
+    obfuscated_account = fields.Char(string='Cuenta destino')
 
     def _get_journal_id(self):
-        if self.ob_destination_account:
-            pass
+        obfuscated_account = self.obfuscated_account
+        if obfuscated_account and not self.journal_id:
+            pattern = obfuscated_account.replace("X", "_")
+            partner_bank = self.env['res.partner.bank'].search([('acc_number', "like", pattern)], limit=1)
+            journal_id = self.env['account.journal'].search([('bank_account_id', '=', partner_bank.id)], limit=1)
+            if journal_id:
+                self.journal_id = journal_id.id
+
+    def action_get_journal_id(self):
+        for record in self:
+            record._get_journal_id()
 
     def _check_sip_state(self):
         sip_url = self.company_id._get_sip_url()

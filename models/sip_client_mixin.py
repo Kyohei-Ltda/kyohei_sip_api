@@ -92,9 +92,10 @@ class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
                     'date': expiration_date,
                     'for_single_use': data_dict['unicoUso'],
                     'company_id': self.company_id.id,
-                    'ob_destination_account': sip_qr['objeto']['cuentaDestino'],
+                    'obfuscated_account': sip_qr['objeto']['cuentaDestino'],
                     'state': 'pendiente'
                 })
+                qr_id._get_journal_id()
                 self.write({'sip_qr_id': qr_id.id})
             return self._get_notification_action(operation, response_data['mensaje'])
         else:
