@@ -28,15 +28,14 @@ class KyoheiSipApiControllers(http.Controller):
                     'amount': data.get('monto'),
                     'transaction_type': 'QR SIP'
                 })
-                return Response(
-                    json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
-                    content_type='application/json;charset=utf-8',
-                    status=200
-                )
+            return Response(
+                '{"codigo": "0000", "mensaje": "Registro exitoso"}',
+                content_type='application/json;charset=utf-8',
+                status=200
+            )
         else:
             return Response(
                 json.dumps({"codigo": "9999", "mensaje": "No existe el QR en la base de datos"}),
                 content_type='application/json;charset=utf-8',
                 status=500
             )
-        Response()
