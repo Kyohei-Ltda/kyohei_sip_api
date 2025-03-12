@@ -6,7 +6,7 @@ from odoo.http import Response, request
 from datetime import datetime
 
 
-class KyoheiBankIntegrationsControllers(http.Controller):
+class KyoheiSipApiControllers(http.Controller):
     @http.route('/sip/confirmaPago', type='json', csrf=False, auth="public", methods=['POST'])
     def confirm_sip_qr_payment(self):
         data = request.httprequest.json

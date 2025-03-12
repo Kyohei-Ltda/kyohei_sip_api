@@ -8,7 +8,7 @@ from datetime import datetime
 _logger = logging.getLogger(__name__)
 
 
-class KyoheiBankIntegrationsSipQr(models.Model):
+class KyoheiSipApiSipQr(models.Model):
     _name = 'sip.qr'
     _description = 'SIP QR'
     _rec_name = 'sequence_id'
@@ -20,7 +20,7 @@ class KyoheiBankIntegrationsSipQr(models.Model):
         for vals in vals_list:
             if not vals.get('sequence_id') or vals['sequence_id'] == '/':
                 vals['sequence_id'] = self.env['ir.sequence'].next_by_code('sip.qr.sequence') or '/'
-        return super(KyoheiBankIntegrationsSipQr, self).create(vals_list)
+        return super(KyoheiSipApiSipQr, self).create(vals_list)
 
     state = fields.Selection(
         [('pendiente', 'Pendiente'),

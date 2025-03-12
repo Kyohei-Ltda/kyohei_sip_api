@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Integración SIP",
+    'name': "API QR SIP",
 
     'summary': """
     Integre su Odoo con las API SIP para cobros QR

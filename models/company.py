@@ -10,7 +10,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class KyoheiBankIntegrationsCompany(models.Model):
+class KyoheiSipApiCompany(models.Model):
     _inherit = 'res.company'
 
     sip_environment = fields.Selection(
@@ -29,7 +29,7 @@ class KyoheiBankIntegrationsCompany(models.Model):
 
     def _get_sip_url(self):
         sip_url_param = 'sip_dev_url' if self.sip_environment == 'dev' else 'sip_prod_url'
-        sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_bank_integrations.{sip_url_param}")
+        sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
     def _get_sip_auth_token(self):

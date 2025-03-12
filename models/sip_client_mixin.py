@@ -10,13 +10,13 @@ from datetime import datetime
 _logger = logging.getLogger(__name__)
 
 
-class KyoheiBankIntegrationsSipClientMixin(models.AbstractModel):
+class KyoheiSipApiSipClientMixin(models.AbstractModel):
     _name = 'sip.client.mixin'
     _description = 'Cliente SIP'
 
     def _get_sip_url(self):
         sip_url_param = 'sip_dev_url' if self.company_id.sip_environment == 'dev' else 'sip_prod_url'
-        sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_bank_integrations.{sip_url_param}")
+        sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
     def _get_sip_callback(self):

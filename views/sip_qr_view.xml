@@ -98,7 +98,7 @@
         </field>
     </record>
 
-    <record id="kyohei_bank_integrations.sip_qr_actions" model="ir.actions.act_window">
+    <record id="kyohei_sip_api.sip_qr_actions" model="ir.actions.act_window">
         <field name="name">QR Sip</field>
         <field name="res_model">sip.qr</field>
         <field name="view_mode">list,form</field>
@@ -108,21 +108,21 @@
     <record model="ir.actions.act_window.view" id="kyohei_sip_qr_view_list">
         <field name="sequence" eval="1"/>
         <field name="view_mode">list</field>
-        <field name="view_id" ref="kyohei_bank_integrations.kyohei_sip_qr_list"/>
-        <field name="act_window_id" ref="kyohei_bank_integrations.sip_qr_actions"/>
+        <field name="view_id" ref="kyohei_sip_api.kyohei_sip_qr_list"/>
+        <field name="act_window_id" ref="kyohei_sip_api.sip_qr_actions"/>
     </record>
 
     <record model="ir.actions.act_window.view" id="kyohei_sip_qr_view_form">
         <field name="sequence" eval="2"/>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="kyohei_bank_integrations.kyohei_sip_qr_form"/>
-        <field name="act_window_id" ref="kyohei_bank_integrations.sip_qr_actions"/>
+        <field name="view_id" ref="kyohei_sip_api.kyohei_sip_qr_form"/>
+        <field name="act_window_id" ref="kyohei_sip_api.sip_qr_actions"/>
     </record>
 
     <menuitem name="QR Sip"
-              id="kyohei_bank_integrations.sip_qr_menu"
+              id="kyohei_sip_api.sip_qr_menu"
               parent="account.account_banks_menu"
-              action="kyohei_bank_integrations.sip_qr_actions"
+              action="kyohei_sip_api.sip_qr_actions"
               sequence="10"/>
 
 </odoo>

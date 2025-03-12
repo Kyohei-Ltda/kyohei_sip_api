@@ -5,7 +5,7 @@ from datetime import timedelta
 import uuid
 
 
-class KyoheiBankIntegrationsMove(models.Model):
+class KyoheiSipApiMove(models.Model):
     _name = 'account.move'
     _inherit = ['sip.client.mixin', 'account.move']
 

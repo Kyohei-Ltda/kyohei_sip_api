@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record model="ir.ui.view" id="kyohei_bank_integrations_move_form">
+    <record model="ir.ui.view" id="kyohei_sip_api_move_form">
         <field name="name">kyohei.bank.integrations.account.move.form</field>
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
