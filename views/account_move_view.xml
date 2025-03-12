@@ -12,19 +12,19 @@
                         type="object"
                         class="oe_highlight btn-primary"
                         groups="base.group_no_one"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_id"/>
+                        invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
                 <button name="action_revoke_sip_qr"
                         string="Revocar SIP"
                         type="object"
                         class="oe_highlight btn-primary"
                         groups="base.group_no_one"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id"/>
+                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
                 <button name="action_check_sip_payment"
                         string="Consulta SIP"
                         type="object"
                         class="oe_highlight btn-primary"
                         groups="base.group_no_one"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id"/>
+                        invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
             </header>
             <field name="preferred_payment_method_line_id" position="after">
                 <field name="sip_qr_id" readonly="True"/>

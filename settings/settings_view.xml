@@ -25,7 +25,7 @@
                                 </div>
                             </div>
                         </setting>
-                        <setting string="Credenciales">
+                        <setting string="Credenciales" help="Llenar con datos recibidos en correo electrónico">
                             <div class="content-group">
                                 <div class="row mt16">
                                     <label for="sip_username" string="Username" class="col-lg-3"/>
@@ -41,17 +41,21 @@
                                 </div>
                             </div>
                         </setting>
-                        <setting string="Token">
+                        <setting string="Token" help="Llenar con Apikey dentro de sitio SIP">
                             <div class="content-group">
-                                <div class="row mt16">
-                                    <label for="sip_qr_apikey" string="QR Apikey" class="col-lg-3"/>
-                                    <field name="sip_qr_apikey"/>
+                                <div class="row mt16" invisible="sip_environment != 'dev'">
+                                    <label for="sip_qr_dev_apikey" string="QR Apikey" class="col-lg-3"/>
+                                    <field name="sip_qr_dev_apikey"/>
                                 </div>
-                                <div class="row mt16">
+                                <div class="row mt16" invisible="sip_environment != 'prod'">
+                                    <label for="sip_qr_prod_apikey" string="QR Apikey" class="col-lg-3"/>
+                                    <field name="sip_qr_prod_apikey"/>
+                                </div>
+                                <div class="row mt16" invisible="not sip_qr_dev_apikey and not sip_qr_prod_apikey">
                                     <label for="sip_auth_token" string="Authorization" class="col-lg-3"/>
                                     <field name="sip_auth_token"/>
                                 </div>
-                                <div class="row mt16">
+                                <div class="row mt16" invisible="not sip_qr_dev_apikey and not sip_qr_prod_apikey">
                                     <label for="sip_auth_duration" string="Duration" class="col-lg-3"/>
                                     <field name="sip_auth_duration"/>
                                 </div>

@@ -24,12 +24,21 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    <field name="state" widget="statusbar"/>
                     <button name="action_get_journal_id"
                         string="Asociar diario"
                         type="object"
                         class="oe_highlight btn-primary"
                         invisible="journal_id"/>
+                    <button name="action_check_sip_state"
+                        string="Verificar estado"
+                        type="object"
+                        class="oe_highlight btn-secondary"/>
+                    <button name="action_disable_sip_qr"
+                        string="Inhabilitar"
+                        type="object"
+                        class="oe_highlight btn-danger"
+                        invisible="state != 'pendiente'"/>
                 </header>
                 <div class="oe_button_box" name="button_box"/>
                 <sheet>
@@ -41,6 +50,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="partner_id"/>
                             <field name="ref"/>
                             <field name="label"/>
                             <field name="company_id"/>
@@ -48,16 +58,19 @@
                         <group>
                             <field name="date"/>
                             <field name="amount" widget="monetary"/>
+                            <field name="currency_id"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Banco">
+                        <page string="Otra información">
                             <group>
                                 <group>
                                     <field name="journal_id"/>
+                                    <field name="obfuscated_account"/>
                                 </group>
                                 <group>
-                                    <field name="obfuscated_account"/>
+                                    <field name="source_model"/>
+                                    <field name="source_res_id"/>
                                 </group>
                             </group>
                         </page>

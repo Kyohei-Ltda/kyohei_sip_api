@@ -17,7 +17,7 @@ class KyoheiBankIntegrationsMove(models.Model):
             data_dict = {
                 'alias': payment_ref,
                 'callback': record._get_sip_callback(),
-                'detalleGlosa': record.invoice_line_ids[0].name,
+                'detalleGlosa': record.name,
                 'monto': record.amount_residual,
                 'moneda': record.currency_id.name,
                 'fechaVencimiento': qr_expiration_date.strftime('%d/%m/%Y'),
@@ -28,7 +28,15 @@ class KyoheiBankIntegrationsMove(models.Model):
 
     def action_revoke_sip_qr(self):
         for record in self:
-            return record._disable_sip_qr({'alias': record.payment_reference})
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": "Obtención token SIP",
+                    "message": record.sip_qr_id._disable_sip_qr(),
+                    "sticky": False,
+                }
+            }
 
     def action_check_sip_payment(self):
         for record in self:
