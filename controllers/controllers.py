@@ -36,5 +36,5 @@ class KyoheiSipApiControllers(http.Controller):
             return Response(
                 '{"codigo": "9999", "mensaje":"No existe el QR en la base de datos"}',
                 content_type='application/json;charset=utf-8',
-                status=200
+                status=500
             )
