@@ -22,9 +22,10 @@ Después de instalar el módulo obtendrá:
     'depends': ['account'],
     'license': 'Other proprietary',
     'data': [
-        # 'views/payment_sip_templates.xml',
-        # 'views/payment_provider_view.xml',
-        # 'data/payment_provider_data.xml',
+        'views/payment_sip_templates.xml',
+        'views/payment_provider_view.xml',
+        'data/payment_method_data.xml',
+        'data/payment_provider_data.xml',
         'data/reconcile_model_data.xml',
         'data/sequence_data.xml',
         'data/server_action_data.xml',
@@ -32,5 +33,7 @@ Después de instalar el módulo obtendrá:
         'settings/settings_view.xml',
         'views/account_move_view.xml',
         'views/sip_qr_view.xml',
-    ]
+    ],
+    'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
 }

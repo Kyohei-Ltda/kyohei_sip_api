@@ -8,21 +8,37 @@
         <field name="arch" type="xml">
             <group name="provider_credentials" position='inside'>
                 <group invisible="code != 'sip'">
-                    <field name="sip_merchant_identifier"
-                           string="Merchant Identifier"
-                           required="code == 'sip' and state != 'disabled'"/>
-                    <field name="sip_access_code"
-                           string="Access Code"
+                    <field name="sip_username"
+                           string="Username"
                            required="code == 'sip' and state != 'disabled'"
                            password="True"/>
-                    <field name="sip_sha_request"
-                           string="SHA Request Phrase"
+                    <field name="sip_password"
+                           string="Password"
                            required="code == 'sip' and state != 'disabled'"
                            password="True"/>
-                    <field name="sip_sha_response"
-                           string="SHA Response Phrase"
+                    <field name="sip_auth_apikey"
+                           string="Auth apikey"
                            required="code == 'sip' and state != 'disabled'"
                            password="True"/>
+                </group>
+                <group invisible="code != 'sip'">
+                    <field name="sip_qr_dev_apikey"
+                           string="Dev QR apikey"
+                           required="code == 'sip' and state == 'test'"
+                           invisible="state != 'test'"
+                           password="True"/>
+                    <field name="sip_qr_prod_apikey"
+                           string="Prod QR apikey"
+                           required="code == 'sip' and state == 'enabled'"
+                           invisible="state != 'enabled'"
+                           password="True"/>
+                    <field name="sip_auth_token"
+                           string="Token"
+                           password="True"
+                           invisible="state == 'disabled'"/>
+                    <field name="sip_auth_duration"
+                           string="Duration"
+                           invisible="state == 'disabled'"/>
                 </group>
             </group>
         </field>

@@ -4,22 +4,14 @@
     <!-- Invoices -->
     <record id="get_sip_token_server_action" model="ir.actions.server">
         <field name="name">Get sip token</field>
-        <field name="model_name">res.company</field>
-        <field name="model_id" ref="base.model_res_company"/>
-        <field name="binding_model_id" ref="base.model_res_company"/>
+        <field name="model_name">payment.provider</field>
+        <field name="model_id" ref="payment.model_payment_provider"/>
+        <field name="binding_model_id" ref="payment.model_payment_provider"/>
         <field name="state">code</field>
         <field name="code">
 for record in records:
-    server_response = record._get_sip_auth_token()
-    action = {
-        "type": "ir.actions.client",
-        "tag": "display_notification",
-        "params": {
-        "title": "Obtención token SIP",
-        "message": server_response,
-        "sticky": False,
-            }
-        }
+    if record.code == 'sip':
+        server_response = record._get_sip_auth_token()
         </field>
     </record>
 
