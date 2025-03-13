@@ -22,7 +22,10 @@ Después de instalar el módulo obtendrá:
     'depends': ['account'],
     'license': 'Other proprietary',
     'data': [
-        'data/reconcile_model.xml',
+        # 'views/payment_sip_templates.xml',
+        # 'views/payment_provider_view.xml',
+        # 'data/payment_provider_data.xml',
+        'data/reconcile_model_data.xml',
         'data/sequence_data.xml',
         'data/server_action_data.xml',
         'security/ir.model.access.csv',
