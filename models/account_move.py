@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, exceptions
 from datetime import timedelta
-import uuid
+
+from odoo import models, fields, api, exceptions
 
 
 class KyoheiSipApiMove(models.Model):
@@ -11,11 +11,11 @@ class KyoheiSipApiMove(models.Model):
 
     def action_get_sip_qr(self):
         for record in self:
-            payment_ref = str(uuid.uuid4())
-            qr_expiration_date = record.invoice_date_due  + timedelta(days=1) if record.invoice_date_due < fields.Date.context_today(self) else fields.Date.context_today(self)
-            self.payment_reference = payment_ref
+            record._set_payment_reference()
+            qr_duration = record.company_id.sip_qr_duration
+            qr_expiration_date = record.invoice_date_due  + timedelta(days=qr_duration)
             data_dict = {
-                'alias': payment_ref,
+                'alias': record.sip_reference,
                 'callback': record._get_sip_callback(),
                 'detalleGlosa': record.name,
                 'monto': record.amount_residual,
@@ -28,24 +28,30 @@ class KyoheiSipApiMove(models.Model):
 
     def action_revoke_sip_qr(self):
         for record in self:
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Obtención token SIP",
-                    "message": record.sip_qr_id._disable_sip_qr(),
-                    "sticky": False,
-                }
-            }
+            record.sip_qr_id._disable_sip_qr()
 
     def action_check_sip_payment(self):
         for record in self:
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Obtención token SIP",
-                    "message": record.sip_qr_id._check_sip_state(),
-                    "sticky": False,
-                }
-            }
+            record.sip_qr_id._check_sip_state()
+
+    def _post(self, soft=True):
+        record = super()._post(soft)
+        sip_payment_provider = self.env['payment.provider'].search(
+            [
+                ('code', '=', 'sip'),
+                ('state', 'in', ['test', 'enabled'])
+            ], limit=1
+        )
+        for move in self:
+            if move.country_code == 'BO':
+
+                if sip_payment_provider:
+                    record.action_get_sip_qr()
+        return record
+
+    def button_draft(self):
+        record = super().button_draft()
+        for move in self:
+            if move.sip_qr_id and move.sip_qr_id.state == 'pendiente':
+                move.sip_qr_id._disable_sip_qr()
+        return record

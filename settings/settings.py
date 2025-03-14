@@ -14,8 +14,10 @@ class KyoheiSipApiConfigSettings(models.TransientModel):
     sip_password = fields.Char(related="company_id.sip_password", readonly=False)
 
     sip_auth_apikey = fields.Char(related="company_id.sip_auth_apikey", readonly=False)
-    sip_auth_token = fields.Text(related="company_id.sip_auth_token", readonly=False)
+    sip_auth_token = fields.Char(related="company_id.sip_auth_token", readonly=False)
     sip_auth_duration = fields.Datetime(related="company_id.sip_auth_duration", readonly=False)
 
     sip_qr_dev_apikey = fields.Char(related="company_id.sip_qr_dev_apikey", readonly=False)
     sip_qr_prod_apikey = fields.Char(related="company_id.sip_qr_prod_apikey", readonly=False)
+
+    sip_qr_duration = fields.Integer(related="company_id.sip_qr_duration", readonly=False)

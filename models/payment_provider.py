@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import hashlib
 import logging
-import requests
-
-from odoo import fields, models, exceptions
-
-from odoo.addons.payment_aps import const
-from datetime import timedelta
 from datetime import datetime
+from datetime import timedelta
 
+import requests
+from odoo import fields, models, exceptions, api
+from odoo.addons.payment_aps import const
 
 _logger = logging.getLogger(__name__)
 
@@ -21,31 +18,37 @@ class KyoheiSipApiPaymentProvider(models.Model):
         selection_add=[('sip', 'SIP')],
         ondelete={'sip': 'set default'},
         copy=False)
+
+    @api.onchange('state')
+    def _onchange_company_sip_environment(self):
+        if self.company_id and self.state:
+            if self.state == 'enabled':
+                update_dict = {'sip_environment': 'prod'}
+            else:
+                update_dict = {'sip_environment': 'dev'}
+            self.company_id.sudo().write(update_dict)
+
     sip_username = fields.Char(related='company_id.sip_username', readonly=False)
     sip_password = fields.Char(related='company_id.sip_password', readonly=False)
     sip_auth_apikey = fields.Char(related='company_id.sip_auth_apikey', readonly=False)
     sip_qr_dev_apikey = fields.Char(related='company_id.sip_qr_dev_apikey', readonly=False)
     sip_qr_prod_apikey = fields.Char(related='company_id.sip_qr_prod_apikey', readonly=False)
-    sip_auth_token = fields.Text(related='company_id.sip_auth_token', readonly=False)
+    sip_auth_token = fields.Char(related='company_id.sip_auth_token', readonly=False)
     sip_auth_duration = fields.Datetime(related='company_id.sip_auth_duration', readonly=False)
 
     def _get_sip_url(self):
         if self.state == 'enabled':
             sip_url_param = 'sip_prod_url'
-        elif self.state == 'test':
-            sip_url_param = 'sip_dev_url'
         else:
-            raise exceptions.ValidationError('No puede solicitar token si no define un entorno.')
+            sip_url_param = 'sip_dev_url'
         sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
     def _get_sip_qr_apikey(self):
         if self.state == 'enabled':
             sip_qr_apikey = self.provider_id.sip_qr_prod_apikey
-        elif self.state == 'test':
-            sip_qr_apikey = self.provider_id.sip_qr_dev_apikey
         else:
-            sip_qr_apikey = ''
+            sip_qr_apikey = self.provider_id.sip_qr_dev_apikey
         return sip_qr_apikey
 
     def _get_sip_auth_token(self):
@@ -68,10 +71,9 @@ class KyoheiSipApiPaymentProvider(models.Model):
                     sip_token = response.json()['objeto']['token']
                     self.sip_auth_token = sip_token
                     self.sip_auth_duration = datetime.now() + timedelta(hours=4)
-                    return response_data['mensaje']
+                    _logger.info(f"Succes in getting SIP token: {response_data['mensaje']}")
             else:
-                _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
-                return response.text
+                _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code,
+                              response.text)
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
-            return e

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
+import uuid
+from datetime import datetime
 
 import requests
 from odoo import models, fields, exceptions
-import logging
-from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -22,8 +23,10 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     def _get_sip_callback(self):
         return f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/sip/confirmaPago" or ''
 
-    @staticmethod
-    def _check_sip_auth_token(company):
+    def _get_sip_token(self):
+        self.env['payment.provider'].search([('code', '=', 'sip')], limit=1)._get_sip_auth_token()
+
+    def _check_sip_auth_token(self, company):
         reason_list = []
         if not company.sip_username:
             reason_list.append('Falta el "Usuario".')
@@ -43,7 +46,7 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             raise exceptions.ValidationError(f'Fallas de configuración API SIP:\n{message_body}')
         else:
             if not company.sip_auth_duration or company.sip_auth_duration < datetime.now():
-                company._get_sip_auth_token()
+                self._get_sip_token()
 
     def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
         company_id = self.company_id
@@ -64,32 +67,12 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             return response
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Obtención token SIP",
-                    "message": e,
-                    "sticky": False,
-                }
-            }
-
-    def _get_sip_token(self):
-        self.company_id.action_get_sip_auth_token()
-
-    @staticmethod
-    def _get_notification_action(operation, server_message):
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": operation,
-                "message": server_message,
-                "sticky": False,
-            }
-        }
 
     sip_qr_id = fields.Many2one('sip.qr', string='QR SIP', copy=False, ondelete='set null')
+    sip_reference = fields.Char(string='Referencia SIP', copy=False)
+
+    def _set_payment_reference(self):
+        self.sip_reference = str(uuid.uuid4())
 
     def _enable_sip_qr(self, data_dict):
         endpoint = '/api/v1/generaQr'
@@ -100,7 +83,6 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             header_dict=header,
             data_dict=data_dict
         )
-        operation = 'Generar QR'
         if sip_qr_enable_response.status_code == 200:
             response_data = sip_qr_enable_response.json()
             currency_id = self.env['res.currency'].search([('name', '=', data_dict['moneda'])], limit=1)
@@ -124,10 +106,8 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                 })
                 qr_id._get_journal_id()
                 self.write({'sip_qr_id': qr_id.id})
-            return self._get_notification_action(operation, response_data['mensaje'])
         else:
             _logger.error("Failed to get SIP QR. Status code: %s, Response: %s", sip_qr_enable_response.status_code, sip_qr_enable_response.text)
-            return self._get_notification_action(operation, sip_qr_enable_response.text)
 
 
 

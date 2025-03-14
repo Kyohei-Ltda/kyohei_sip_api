@@ -2,18 +2,15 @@
 
 import logging
 
-from werkzeug import urls
-
 from odoo import _, models
 from odoo.exceptions import ValidationError
-import uuid
-
 
 _logger = logging.getLogger(__name__)
 
 
 class PaymentTransaction(models.Model):
-    _inherit = 'payment.transaction'
+    _name = 'payment.transaction'
+    _inherit = ['sip.client.mixin', 'payment.transaction']
 
     def _get_specific_rendering_values(self, processing_values):
         """ Override of payment to return SIP-specific rendering values.
@@ -28,8 +25,25 @@ class PaymentTransaction(models.Model):
         if self.provider_code != 'sip':
             return res
 
+        # SIP QR generation
+        if not self.sip_qr_id:
+            self._set_payment_reference()
+            data_dict = {
+                'alias': self.sip_reference,
+                'callback': self._get_sip_callback(),
+                'detalleGlosa': f'Cobro factura: {self.reference}',
+                'monto': self.amount,
+                'moneda': self.currency_id.name,
+                'fechaVencimiento': self.last_state_change.date().strftime('%d/%m/%Y'),
+                'tipoSolicitud': 'API',
+                'unicoUso': True,
+            }
+            self._enable_sip_qr(data_dict)
+            if not self.sip_qr_id:
+                raise ValidationError(
+                    "Pago SIP: " + _("No se pudo generar el QR inténtelo más tarde.")
+                )
         rendering_values = {
             'api_url': f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/payment/sip/process",
-            'sip_alias': str(uuid.uuid4()),
         }
         return rendering_values

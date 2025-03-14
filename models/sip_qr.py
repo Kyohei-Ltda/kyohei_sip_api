@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, exceptions
-import requests
 import logging
-from datetime import datetime
+
+import requests
+from odoo import models, fields, api, exceptions
 
 _logger = logging.getLogger(__name__)
 
@@ -63,9 +63,17 @@ class KyoheiSipApiSipQr(models.Model):
         company_id = self.company_id
         return company_id.sip_qr_prod_apikey if company_id.sip_environment == 'prod' else company_id.sip_qr_dev_apikey
 
+    def _get_sip_url(self):
+        if self.company_id.sip_environment == 'prod':
+            sip_url_param = 'sip_prod_url'
+        else:
+            sip_url_param = 'sip_dev_url'
+        sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
+        return sip_url
+
     def _disable_sip_qr(self):
         self.env['account.move']._check_sip_auth_token(self.company_id)
-        sip_url = self.company_id._get_sip_url()
+        sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/inhabilitarPago'
         headers = {
             'apikeyServicio': self._get_qr_apikey(),
@@ -82,29 +90,19 @@ class KyoheiSipApiSipQr(models.Model):
                     self.write({'state': 'inhabilitado'})
                     if self.source_model and self.source_res_id:
                         self.env[self.source_model].sudo().search([('id', '=', self.source_res_id)]).sudo().write({'sip_qr_id': False})
-                return response_data['mensaje']
+                _logger.info(response_data['mensaje'])
             else:
                 _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
-                return response.text
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
-            return e
 
     def action_disable_sip_qr(self):
         for record in self:
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Obtención token SIP",
-                    "message": record._disable_sip_qr(),
-                    "sticky": False,
-                }
-            }
+            record._disable_sip_qr()
 
     def _check_sip_state(self):
         self.env['account.move']._check_sip_auth_token(self.company_id)
-        sip_url = self.company_id._get_sip_url()
+        sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/estadoTransaccion'
         headers = {
             'apikeyServicio': self._get_qr_apikey(),
@@ -122,22 +120,12 @@ class KyoheiSipApiSipQr(models.Model):
                     self.state = sip_token.lower()
                 elif response_data['codigo'] == '9999':
                     self.state = 'expirado'
-                return response_data['mensaje']
+                _logger.info(response_data['mensaje'])
             else:
                 _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
-                return response.text
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
-            return e
 
     def action_check_sip_state(self):
         for record in self:
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Obtención token SIP",
-                    "message": record._check_sip_state(),
-                    "sticky": False,
-                }
-            }
+            record._check_sip_state()

@@ -16,12 +16,9 @@ class KyoheiSipApiControllers(http.Controller):
     @http.route('/payment/sip/process', type='http', auth='public', methods=['POST'], csrf=False)
     def custom_process_transaction(self, **post):
         _logger.info("Handling custom processing with data:\n%s", pprint.pformat(post))
-        return Response(
-            json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
-            content_type='application/json;charset=utf-8',
-            status=200
-        )
+        return request.redirect('/payment/status')
 
+    # TODO: Agregar lógica de confirmar pagos en línea
     @http.route('/sip/confirmaPago', type='http', csrf=False, auth="public", methods=['POST'])
     def confirm_sip_qr_payment(self):
         data = request.httprequest.json
