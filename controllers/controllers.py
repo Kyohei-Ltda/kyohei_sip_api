@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 import logging
 import pprint
+import pytz
 
 _logger = logging.getLogger(__name__)
 
@@ -20,25 +21,25 @@ class KyoheiSipApiControllers(http.Controller):
     @http.route('/sip/confirmaPago', type='http', csrf=False, auth="public", methods=['POST'])
     def confirm_sip_qr_payment(self):
         data = request.httprequest.json
-        payment_ref = data.get('alias')
-        sip_qr_id = request.env['sip.qr'].sudo().search([('ref', '=', payment_ref)], limit=1)
+        sip_reference = data.get('alias')
+        sip_qr_id = request.env['sip.qr'].sudo().search([('ref', '=', sip_reference)], limit=1)
         sip_qr_id.sudo().write({'state': 'pagado'})
         timestamp_ms = data.get('fechaproceso', 0)
-        process_date = datetime.fromtimestamp(timestamp_ms / 1000.0) if timestamp_ms else datetime.now()
+        process_date = pytz.utc.localize(datetime.fromtimestamp(timestamp_ms / 1000.0)).astimezone('America/La_Paz') if timestamp_ms else datetime.now()
         _logger.exception("SIP notification: %s", str(data))
         if sip_qr_id:
             # Set payment transaction as done
-            payment_transaction_id = request.env['payment.transaction'].sudo().search([('sip_reference', '=',  payment_ref)], limit=1)
+            payment_transaction_id = request.env['payment.transaction'].sudo().search([('reference', '=',  sip_qr_id.label)], limit=1)
             if payment_transaction_id:
                 payment_transaction_id.sudo()._set_done()
             # Create bank statement
-            bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', payment_ref)], limit=1)
+            bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', sip_qr_id.label)], limit=1)
             if not bank_statement_line_id:
                 request.env['account.bank.statement.line'].sudo().create({
                     'date': process_date,
                     'journal_id': sip_qr_id.journal_id.id,
                     'currency_id': sip_qr_id.currency_id.id,
-                    'payment_ref': sip_qr_id.ref,
+                    'payment_ref': sip_qr_id.label,
                     'partner_id': sip_qr_id.partner_id.id,
                     'ref': sip_qr_id.label,
                     'amount': data.get('monto'),

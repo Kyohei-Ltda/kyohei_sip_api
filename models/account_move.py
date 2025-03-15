@@ -17,7 +17,7 @@ class KyoheiSipApiMove(models.Model):
             data_dict = {
                 'alias': record.sip_reference,
                 'callback': record._get_sip_callback(),
-                'detalleGlosa': record.name,
+                'detalleGlosa': record.payment_reference,
                 'monto': record.amount_residual,
                 'moneda': record.currency_id.name,
                 'fechaVencimiento': qr_expiration_date.strftime('%d/%m/%Y'),
