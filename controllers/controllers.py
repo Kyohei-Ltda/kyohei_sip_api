@@ -6,7 +6,6 @@ from odoo.http import Response, request
 from datetime import datetime
 import json
 import logging
-from odoo.exceptions import ValidationError
 import pprint
 
 _logger = logging.getLogger(__name__)
@@ -18,7 +17,6 @@ class KyoheiSipApiControllers(http.Controller):
         _logger.info("Handling custom processing with data:\n%s", pprint.pformat(post))
         return request.redirect('/payment/status')
 
-    # TODO: Agregar lógica de confirmar pagos en línea
     @http.route('/sip/confirmaPago', type='http', csrf=False, auth="public", methods=['POST'])
     def confirm_sip_qr_payment(self):
         data = request.httprequest.json
@@ -29,7 +27,12 @@ class KyoheiSipApiControllers(http.Controller):
         process_date = datetime.fromtimestamp(timestamp_ms / 1000.0) if timestamp_ms else datetime.now()
         _logger.exception("SIP notification: %s", str(data))
         if sip_qr_id:
-            bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', payment_ref)])
+            # Set payment transaction as done
+            payment_transaction_id = request.env['payment.transaction'].sudo().search([('sip_reference', '=',  payment_ref)], limit=1)
+            if payment_transaction_id:
+                payment_transaction_id.sudo()._set_done()
+            # Create bank statement
+            bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', payment_ref)], limit=1)
             if not bank_statement_line_id:
                 request.env['account.bank.statement.line'].sudo().create({
                     'date': process_date,

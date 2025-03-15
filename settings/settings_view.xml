@@ -25,6 +25,16 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting string="URL" help="Defina las URL de consumo de API">
+                            <div class="row mt16">
+                                    <label for="sip_dev_url" string="Pruebas" class="col-lg-3"/>
+                                    <field name="sip_dev_url"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="sip_prod_url" string="Producción" class="col-lg-3"/>
+                                    <field name="sip_prod_url"/>
+                                </div>
+                        </setting>
                         <setting string="Parámetros QR" help="Defina las características de generación de los códigos QR">
                             <div class="row mt16">
                                     <label for="sip_environment" string="Entorno" class="col-lg-3"/>

@@ -73,7 +73,6 @@ class KyoheiSipApiPaymentProvider(models.Model):
                     self.sip_auth_duration = datetime.now() + timedelta(hours=4)
                     _logger.info(f"Succes in getting SIP token: {response_data['mensaje']}")
             else:
-                _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code,
-                              response.text)
+                _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))

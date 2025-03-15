@@ -11,7 +11,7 @@
         <field name="code">
 for record in records:
     if record.code == 'sip':
-        server_response = record._get_sip_auth_token()
+        record._get_sip_auth_token()
         </field>
     </record>
 
