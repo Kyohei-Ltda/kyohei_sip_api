@@ -31,7 +31,7 @@ class PaymentTransaction(models.Model):
             data_dict = {
                 'alias': self.sip_reference,
                 'callback': self._get_sip_callback(),
-                'detalleGlosa': f'Cobro factura: {self.reference}',
+                'detalleGlosa': self.reference,
                 'monto': self.amount,
                 'moneda': self.currency_id.name,
                 'fechaVencimiento': self.last_state_change.date().strftime('%d/%m/%Y'),

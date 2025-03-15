@@ -48,6 +48,7 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             if not company.sip_auth_duration or company.sip_auth_duration < datetime.now():
                 self._get_sip_token()
 
+    # TODO: Change data for payment provider
     def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
         company_id = self.company_id
         self._check_sip_auth_token(company_id)
@@ -90,7 +91,6 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             if response_data['codigo'] == '0000':
                 sip_qr = json.loads(sip_qr_enable_response.content.decode('utf-8'))
                 qr_id = self.env['sip.qr'].create({
-                    'partner_id': self.partner_id.id or False,
                     'qr_image': sip_qr['objeto']['imagenQr'],
                     'ref': data_dict['alias'],
                     'label': data_dict['detalleGlosa'],

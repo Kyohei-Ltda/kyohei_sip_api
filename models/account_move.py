@@ -34,21 +34,6 @@ class KyoheiSipApiMove(models.Model):
         for record in self:
             record.sip_qr_id._check_sip_state()
 
-    def _post(self, soft=True):
-        record = super()._post(soft)
-        sip_payment_provider = self.env['payment.provider'].search(
-            [
-                ('code', '=', 'sip'),
-                ('state', 'in', ['test', 'enabled'])
-            ], limit=1
-        )
-        for move in self:
-            if move.country_code == 'BO':
-
-                if sip_payment_provider:
-                    record.action_get_sip_qr()
-        return record
-
     def button_draft(self):
         record = super().button_draft()
         for move in self:

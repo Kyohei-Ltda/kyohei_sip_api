@@ -25,8 +25,10 @@ class KyoheiSipApiControllers(http.Controller):
         sip_qr_id = request.env['sip.qr'].sudo().search([('ref', '=', sip_reference)], limit=1)
         sip_qr_id.sudo().write({'state': 'pagado'})
         timestamp_ms = data.get('fechaproceso', 0)
-        process_date = pytz.utc.localize(datetime.fromtimestamp(timestamp_ms / 1000.0)).astimezone('America/La_Paz') if timestamp_ms else datetime.now()
-        _logger.exception("SIP notification: %s", str(data))
+        process_date = datetime.fromtimestamp(timestamp_ms / 1000.0)
+        la_paz_tz = pytz.timezone('America/La_Paz')
+        localized_process_date = pytz.utc.localize(process_date).astimezone(la_paz_tz) if timestamp_ms else datetime.now()
+        _logger.info("SIP notification: %s", str(data))
         if sip_qr_id:
             # Set payment transaction as done
             payment_transaction_id = request.env['payment.transaction'].sudo().search([('reference', '=',  sip_qr_id.label)], limit=1)
@@ -36,12 +38,11 @@ class KyoheiSipApiControllers(http.Controller):
             bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', sip_qr_id.label)], limit=1)
             if not bank_statement_line_id:
                 request.env['account.bank.statement.line'].sudo().create({
-                    'date': process_date,
+                    'ref': f"Cobro automático QR SIP: {sip_reference}",
+                    'date': localized_process_date,
                     'journal_id': sip_qr_id.journal_id.id,
                     'currency_id': sip_qr_id.currency_id.id,
                     'payment_ref': sip_qr_id.label,
-                    'partner_id': sip_qr_id.partner_id.id,
-                    'ref': sip_qr_id.label,
                     'amount': data.get('monto'),
                     'transaction_type': 'QR SIP'
                 })

@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <header position="inside">
                 <button name="action_get_sip_qr"
-                        string="Generar SIP"
+                        string="Enviar QR"
                         type="object"
                         class="oe_highlight btn-primary"
                         groups="base.group_no_one"
