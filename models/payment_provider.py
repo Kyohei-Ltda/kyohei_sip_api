@@ -19,22 +19,17 @@ class KyoheiSipApiPaymentProvider(models.Model):
         ondelete={'sip': 'set default'},
         copy=False)
 
-    @api.onchange('state')
-    def _onchange_company_sip_environment(self):
-        if self.company_id and self.state:
-            if self.state == 'enabled':
-                update_dict = {'sip_environment': 'prod'}
-            else:
-                update_dict = {'sip_environment': 'dev'}
-            self.company_id.sudo().write(update_dict)
-
-    sip_username = fields.Char(related='company_id.sip_username', readonly=False)
-    sip_password = fields.Char(related='company_id.sip_password', readonly=False)
-    sip_auth_apikey = fields.Char(related='company_id.sip_auth_apikey', readonly=False)
-    sip_qr_dev_apikey = fields.Char(related='company_id.sip_qr_dev_apikey', readonly=False)
-    sip_qr_prod_apikey = fields.Char(related='company_id.sip_qr_prod_apikey', readonly=False)
-    sip_auth_token = fields.Char(related='company_id.sip_auth_token', readonly=False)
-    sip_auth_duration = fields.Datetime(related='company_id.sip_auth_duration', readonly=False)
+    sip_dev_username = fields.Char(string='Dev username')
+    sip_prod_username = fields.Char(string='Prod username')
+    sip_dev_password = fields.Char(string='Dev password')
+    sip_prod_password = fields.Char(string='Prod password')
+    sip_dev_auth_apikey = fields.Char(string='Dev auth apikey')
+    sip_prod_auth_apikey = fields.Char(string='Prod auth apikey')
+    sip_qr_dev_apikey = fields.Char(string='Dev QR apikey')
+    sip_qr_prod_apikey = fields.Char(string='Prod QR apikey')
+    sip_auth_token = fields.Char(string='Auth token')
+    sip_auth_duration = fields.Datetime(string='Token Duration')
+    sip_qr_duration = fields.Integer(string='QR Duration', default=1)
 
     def _get_sip_url(self):
         if self.state == 'enabled':
@@ -53,13 +48,16 @@ class KyoheiSipApiPaymentProvider(models.Model):
 
     def _get_sip_auth_token(self):
         url = self._get_sip_url() + '/autenticacion/v1/generarToken'
+        sip_auth_apikey = self.sip_prod_auth_apikey if self.state == 'enabled' else self.sip_dev_auth_apikey
+        sip_username = self.sip_prod_username if self.state == 'enabled' else self.sip_dev_username
+        sip_password = self.sip_prod_password if self.state == 'enabled' else self.sip_dev_password
         headers = {
-            'apikey': self.sip_auth_apikey,
+            'apikey': sip_auth_apikey,
             'Content-Type': 'application/json'
         }
         data = {
-            'password': self.sip_password,
-            'username': self.sip_username,
+            'password': sip_password,
+            'username': sip_username,
         }
         try:
             response = requests.post(url=url, headers=headers, json=data)

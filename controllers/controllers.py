@@ -38,11 +38,11 @@ class KyoheiSipApiControllers(http.Controller):
             bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', sip_qr_id.label)], limit=1)
             if not bank_statement_line_id:
                 request.env['account.bank.statement.line'].sudo().create({
-                    'ref': f"Cobro automático QR SIP: {sip_reference}",
+                    'ref': sip_qr_id.label,
                     'date': localized_process_date,
                     'journal_id': sip_qr_id.journal_id.id,
                     'currency_id': sip_qr_id.currency_id.id,
-                    'payment_ref': sip_qr_id.label,
+                    'payment_ref': f"Cobro automático QR SIP: {sip_reference}",
                     'amount': data.get('monto'),
                     'transaction_type': 'QR SIP'
                 })

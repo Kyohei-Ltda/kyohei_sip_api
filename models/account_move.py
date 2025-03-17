@@ -12,7 +12,8 @@ class KyoheiSipApiMove(models.Model):
     def action_get_sip_qr(self):
         for record in self:
             record._set_payment_reference()
-            qr_duration = record.company_id.sip_qr_duration
+            payment_provider_id = record._get_payment_provider()
+            qr_duration = payment_provider_id.sip_qr_duration
             qr_expiration_date = record.invoice_date_due  + timedelta(days=qr_duration)
             data_dict = {
                 'alias': record.sip_reference,

@@ -15,8 +15,12 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     _name = 'sip.client.mixin'
     _description = 'Cliente SIP'
 
+    def _get_payment_provider(self):
+        return self.env['payment.provider'].sudo().search([('code', '=', 'sip'), ('company_id', '=', self.company_id.id)], limit=1)
+
     def _get_sip_url(self):
-        sip_url_param = 'sip_dev_url' if self.company_id.sip_environment == 'dev' else 'sip_prod_url'
+        payment_provider_id = self._get_payment_provider()
+        sip_url_param = 'sip_prod_url' if payment_provider_id.state == 'enabled' else 'sip_dev_url'
         sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
@@ -26,15 +30,16 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     def _get_sip_token(self):
         self.env['payment.provider'].search([('code', '=', 'sip')], limit=1)._get_sip_auth_token()
 
-    def _check_sip_auth_token(self, company):
+    def _check_sip_auth_token(self):
+        payment_provider_id = self._get_payment_provider()
         reason_list = []
-        if not company.sip_username:
+        if not payment_provider_id.sip_dev_username and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_username and payment_provider_id.state == 'enabled':
             reason_list.append('Falta el "Usuario".')
-        if not company.sip_password:
+        if not payment_provider_id.sip_dev_password and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_password and payment_provider_id.state == 'enabled':
             reason_list.append('Falta la "Contraseña".')
-        if not company.sip_auth_apikey:
+        if not payment_provider_id.sip_dev_auth_apikey and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_auth_apikey and payment_provider_id.state == 'enabled':
             reason_list.append('Falta el "Auth Apikey".')
-        if company.sip_environment == 'dev' and not company.sip_qr_dev_apikey or company.sip_environment == 'prod' and not company.sip_qr_prod_apikey:
+        if not payment_provider_id.sip_qr_dev_apikey and payment_provider_id.state == 'test' or not payment_provider_id.sip_qr_prod_apikey and payment_provider_id.state == 'enabled':
             reason_list.append('Falta el "QR Apikey".')
         if len(reason_list) > 0:
             message_body = ''
@@ -45,15 +50,14 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                     message_body += ('\n' + '-' + reason)
             raise exceptions.ValidationError(f'Fallas de configuración API SIP:\n{message_body}')
         else:
-            if not company.sip_auth_duration or company.sip_auth_duration < datetime.now():
+            if not payment_provider_id.sip_auth_duration or payment_provider_id.sip_auth_duration < datetime.now():
                 self._get_sip_token()
 
-    # TODO: Change data for payment provider
     def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
-        company_id = self.company_id
-        self._check_sip_auth_token(company_id)
+        payment_provider_id = self._get_payment_provider()
+        self._check_sip_auth_token()
         url = self._get_sip_url() + endpoint
-        qr_apikey = company_id.sip_qr_prod_apikey if company_id.sip_environment == 'prod' else company_id.sip_qr_dev_apikey
+        qr_apikey = payment_provider_id.sip_qr_prod_apikey if payment_provider_id.state == 'enabled' else payment_provider_id.sip_qr_dev_apikey
         headers = {
             'apikeyServicio': qr_apikey,
             'Content-Type': 'application/json'
@@ -76,8 +80,9 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
         self.sip_reference = str(uuid.uuid4())
 
     def _enable_sip_qr(self, data_dict):
+        payment_provider_id = self._get_payment_provider()
         endpoint = '/api/v1/generaQr'
-        header = {'Authorization': f'Bearer {self.company_id.sip_auth_token}'}
+        header = {'Authorization': f'Bearer {payment_provider_id.sip_auth_token}'}
         sip_qr_enable_response = self._get_sip_response(
             endpoint=endpoint,
             server_method='post',

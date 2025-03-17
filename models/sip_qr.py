@@ -12,6 +12,7 @@ class KyoheiSipApiSipQr(models.Model):
     _name = 'sip.qr'
     _description = 'SIP QR'
     _rec_name = 'sequence_id'
+    _order = 'sequence_id desc'
 
     sequence_id = fields.Char(readonly=True, string='Secuencia')
 
@@ -59,25 +60,27 @@ class KyoheiSipApiSipQr(models.Model):
         for record in self:
             record._get_journal_id()
 
+    def _get_payment_provider(self):
+        return self.env['payment.provider'].sudo().search([('code', '=', 'sip'), ('company_id', '=', self.company_id.id)], limit=1)
+
     def _get_qr_apikey(self):
-        company_id = self.company_id
-        return company_id.sip_qr_prod_apikey if company_id.sip_environment == 'prod' else company_id.sip_qr_dev_apikey
+        payment_provider_id = self._get_payment_provider()
+        return payment_provider_id.sip_qr_prod_apikey if payment_provider_id.state == 'enabled' else payment_provider_id.sip_qr_dev_apikey
 
     def _get_sip_url(self):
-        if self.company_id.sip_environment == 'prod':
-            sip_url_param = 'sip_prod_url'
-        else:
-            sip_url_param = 'sip_dev_url'
+        payment_provider_id = self._get_payment_provider()
+        sip_url_param = 'sip_prod_url' if payment_provider_id.state == 'enabled' else 'sip_dev_url'
         sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
     def _disable_sip_qr(self):
-        self.env['account.move']._check_sip_auth_token(self.company_id)
+        self.env['account.move']._check_sip_auth_token()
+        payment_provider_id = self._get_payment_provider()
         sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/inhabilitarPago'
         headers = {
             'apikeyServicio': self._get_qr_apikey(),
-            'Authorization': f'Bearer {self.company_id.sip_auth_token}',
+            'Authorization': f'Bearer {payment_provider_id.sip_auth_token}',
             'Content-Type': 'application/json'
         }
         try:
@@ -101,12 +104,13 @@ class KyoheiSipApiSipQr(models.Model):
             record._disable_sip_qr()
 
     def _check_sip_state(self):
-        self.env['account.move']._check_sip_auth_token(self.company_id)
+        self.env['account.move']._check_sip_auth_token()
+        payment_provider_id = self._get_payment_provider()
         sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/estadoTransaccion'
         headers = {
             'apikeyServicio': self._get_qr_apikey(),
-            'Authorization': f'Bearer {self.company_id.sip_auth_token}',
+            'Authorization': f'Bearer {payment_provider_id.sip_auth_token}',
             'Content-Type': 'application/json'
         }
         try:
