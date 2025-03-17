@@ -1,3 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-kyohei_sip_api.access_qr_payment_wizard,access_qr_payment_wizard,kyohei_sip_api.model_qr_payment_wizard,base.group_user,1,1,1,1
 kyohei_sip_api.access_sip_qr,access_sip_qr,kyohei_sip_api.model_sip_qr,base.group_user,1,1,1,1
