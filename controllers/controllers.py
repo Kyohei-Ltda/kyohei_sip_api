@@ -24,33 +24,54 @@ class KyoheiSipApiControllers(http.Controller):
         sip_reference = data.get('alias')
         sip_qr_id = request.env['sip.qr'].sudo().search([('ref', '=', sip_reference)], limit=1)
         sip_qr_id.sudo().write({'state': 'pagado'})
-        timestamp_ms = data.get('fechaproceso', 0)
-        process_date = datetime.fromtimestamp(timestamp_ms / 1000.0)
-        la_paz_tz = pytz.timezone('America/La_Paz')
-        localized_process_date = pytz.utc.localize(process_date).astimezone(la_paz_tz) if timestamp_ms else datetime.now()
+
         _logger.info("SIP notification: %s", str(data))
         if sip_qr_id:
             # Set payment transaction as done
             payment_transaction_id = request.env['payment.transaction'].sudo().search([('reference', '=',  sip_qr_id.label)], limit=1)
             if payment_transaction_id:
                 payment_transaction_id.sudo()._set_done()
-            # Create bank statement
-            bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('payment_ref', '=', sip_qr_id.label)], limit=1)
-            if not bank_statement_line_id:
-                request.env['account.bank.statement.line'].sudo().create({
-                    'ref': sip_qr_id.label,
-                    'date': localized_process_date,
-                    'journal_id': sip_qr_id.journal_id.id,
-                    'currency_id': sip_qr_id.currency_id.id,
-                    'payment_ref': f"Cobro automático QR SIP: {sip_reference}",
-                    'amount': data.get('monto'),
-                    'transaction_type': 'QR SIP'
-                })
-            return Response(
-                json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
-                content_type='application/json;charset=utf-8',
-                status=200
-            )
+
+            # Check authentication
+            auth = request.httprequest.authorization
+            username = auth.username
+            password = auth.password
+            if username and password:
+                payment_provider_id = request.env['payment.provider'].sudo().search([
+                    ('code', '=', 'sip'),
+                    ('state', '=', 'enabled'),
+                    ('company_id', '=', sip_qr_id.company_id.id),
+                    ('sip_username', '=', username),
+                    ('sip_password', '=', password)
+                ], limit=1)
+            else:
+                payment_provider_id = request.env['payment.provider'].sudo().search([
+                    ('code', '=', 'sip'),
+                    ('state', '=', 'test'),
+                    ('company_id', '=', sip_qr_id.company_id.id)
+                ], limit=1)
+            if payment_provider_id:
+                # Create bank statement
+                bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('ref', '=', sip_qr_id.label)], limit=1)
+                if not bank_statement_line_id:
+                    timestamp_ms = data.get('fechaproceso', 0)
+                    process_date = datetime.fromtimestamp(timestamp_ms / 1000.0)
+                    la_paz_tz = pytz.timezone('America/La_Paz')
+                    localized_process_date = pytz.utc.localize(process_date).astimezone(la_paz_tz) if timestamp_ms else datetime.now()
+                    request.env['account.bank.statement.line'].sudo().create({
+                        'ref': sip_qr_id.label,
+                        'date': localized_process_date,
+                        'journal_id': sip_qr_id.journal_id.id,
+                        'currency_id': sip_qr_id.currency_id.id,
+                        'payment_ref': f"Cobro automático QR SIP: {sip_reference}",
+                        'amount': data.get('monto'),
+                        'transaction_type': 'QR SIP'
+                    })
+                return Response(
+                    json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
+                    content_type='application/json;charset=utf-8',
+                    status=200
+                )
         else:
             return Response(
                 json.dumps({"codigo": "9999", "mensaje": "No existe el QR en la base de datos"}),

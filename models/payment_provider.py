@@ -30,6 +30,8 @@ class KyoheiSipApiPaymentProvider(models.Model):
     sip_auth_token = fields.Char(string='Auth token')
     sip_auth_duration = fields.Datetime(string='Token Duration')
     sip_qr_duration = fields.Integer(string='QR Duration', default=1)
+    sip_username = fields.Char(string='Callback username')
+    sip_password = fields.Char(string='Callback password')
 
     def _get_sip_url(self):
         if self.state == 'enabled':
