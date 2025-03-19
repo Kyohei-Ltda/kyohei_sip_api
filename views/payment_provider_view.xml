@@ -11,8 +11,7 @@
                     <field name="sip_dev_username"
                            string="Username"
                            required="code == 'sip' and state == 'test'"
-                           invisible="state != 'test'"
-                           password="True"/>
+                           invisible="state != 'test'"/>
                     <field name="sip_dev_password"
                            string="Password"
                            required="code == 'sip' and state == 'test'"
@@ -26,8 +25,7 @@
                     <field name="sip_prod_username"
                            string="Username"
                            required="code == 'sip' and state == 'enabled'"
-                           invisible="state != 'enabled'"
-                           password="True"/>
+                           invisible="state != 'enabled'"/>
                     <field name="sip_prod_password"
                            string="Password"
                            required="code == 'sip' and state == 'enabled'"

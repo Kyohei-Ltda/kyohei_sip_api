@@ -92,7 +92,7 @@ class KyoheiSipApiSipQr(models.Model):
                 if response_data['codigo'] == '0000':
                     self.write({'state': 'inhabilitado'})
                     if self.source_model and self.source_res_id:
-                        self.env[self.source_model].sudo().search([('id', '=', self.source_res_id)]).sudo().write({'sip_qr_id': False})
+                        self.env[self.source_model].sudo().search([('id', '=', self.source_res_id)]).sudo().write({'sip_qr_id': False, 'qr_attachment_id': False})
                 _logger.info(response_data['mensaje'])
             else:
                 _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)

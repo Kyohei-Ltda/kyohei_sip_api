@@ -74,6 +74,7 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             _logger.exception("Exception when getting SIP token: %s", str(e))
 
     sip_qr_id = fields.Many2one('sip.qr', string='QR SIP', copy=False, ondelete='set null')
+    qr_attachment_id = fields.Many2one('ir.attachment')
     sip_reference = fields.Char(string='Referencia SIP', copy=False)
 
     def _set_payment_reference(self):
@@ -110,7 +111,20 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                     'source_res_id': self.id
                 })
                 qr_id._get_journal_id()
-                self.write({'sip_qr_id': qr_id.id})
+
+                # Create attachment
+                qr_attachment = self.env['ir.attachment'].create({
+                    'datas': qr_id.qr_image,
+                    'name': 'QR Pago',
+                    'mimetype': 'image/png',
+                    'res_model': 'account.move',
+                    'res_id': self.id,
+                })
+
+                self.write({
+                    'sip_qr_id': qr_id.id,
+                    'qr_attachment_id': qr_attachment
+                })
         else:
             _logger.error("Failed to get SIP QR. Status code: %s, Response: %s", sip_qr_enable_response.status_code, sip_qr_enable_response.text)
 

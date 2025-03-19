@@ -8,27 +8,33 @@
         <field name="arch" type="xml">
             <header position="inside">
                 <button name="action_get_sip_qr"
-                        string="Enviar QR"
+                        string="Adjuntar QR"
                         type="object"
                         class="oe_highlight btn-primary"
-                        groups="base.group_no_one"
                         invisible="move_type != 'out_invoice' or state != 'posted' or sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
-                <button name="action_revoke_sip_qr"
+            </header>
+            <notebook position="inside">
+                <page name="sip_qr_data" string="Cobro QR" invisible="not sip_qr_id">
+                    <button name="action_revoke_sip_qr"
                         string="Revocar SIP"
                         type="object"
-                        class="oe_highlight btn-primary"
-                        groups="base.group_no_one"
+                        class="oe_highlight btn-danger"
                         invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
                 <button name="action_check_sip_payment"
                         string="Consulta SIP"
                         type="object"
-                        class="oe_highlight btn-primary"
-                        groups="base.group_no_one"
+                        class="oe_highlight btn-secondary"
                         invisible="move_type != 'out_invoice' or state != 'posted' or not sip_qr_id or status_in_payment in ['paid', 'reversed']"/>
-            </header>
-            <field name="preferred_payment_method_line_id" position="after">
-                <field name="sip_qr_id" readonly="True"/>
-            </field>
+                    <group string="Adjuntos">
+                        <group>
+                            <field name="sip_qr_id" readonly="True" string="QR"/>
+                        </group>
+                        <group>
+                            <field name="qr_attachment_id" readonly="True" string="Adjunto"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
         </field>
     </record>
 

@@ -2,6 +2,7 @@
 
 from . import sip_client_mixin
 from . import account_move
+from . import account_move_send
 from . import payment_provider
 from . import payment_transaction
 from . import sip_qr
