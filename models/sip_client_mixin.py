@@ -15,6 +15,15 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     _name = 'sip.client.mixin'
     _description = 'Cliente SIP'
 
+    def _get_currency_rate(self, date):
+        date_search = date if date else fields.Date.context_today(self)
+        try:
+            currency_rate = self.env['res.currency.rate'].search(['&', ['currency_id', '=', self.currency_id.id], ['name', '<=', date_search]], order='name desc', limit=1)[0].inverse_company_rate
+        except IndexError:
+            _logger.exception(f"No exchange rate set for {self.currency_id.name}")
+            currency_rate = 0
+        return currency_rate
+
     def _get_payment_provider(self):
         return self.env['payment.provider'].sudo().search([('code', '=', 'sip'), ('company_id', '=', self.company_id.id)], limit=1)
 

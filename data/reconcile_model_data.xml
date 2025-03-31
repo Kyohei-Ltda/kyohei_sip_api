@@ -10,7 +10,7 @@
             <field name="allow_payment_tolerance" eval="True"/>
             <field name="payment_tolerance_param">0</field>
             <field name="payment_tolerance_type">percentage</field>
-            <field name="match_same_currency" eval="True"/>
+            <field name="match_same_currency" eval="False"/>
             <field name="match_text_location_label" eval="False"/>
             <field name="match_text_location_reference" eval="True"/>
             <field name="match_transaction_type">contains</field>

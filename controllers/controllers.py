@@ -36,20 +36,12 @@ class KyoheiSipApiControllers(http.Controller):
             auth = request.httprequest.authorization
             username = auth.username
             password = auth.password
-            if username and password:
-                payment_provider_id = request.env['payment.provider'].sudo().search([
-                    ('code', '=', 'sip'),
-                    ('state', '=', 'enabled'),
-                    ('company_id', '=', sip_qr_id.company_id.id),
-                    ('sip_username', '=', username),
-                    ('sip_password', '=', password)
-                ], limit=1)
-            else:
-                payment_provider_id = request.env['payment.provider'].sudo().search([
-                    ('code', '=', 'sip'),
-                    ('state', '=', 'test'),
-                    ('company_id', '=', sip_qr_id.company_id.id)
-                ], limit=1)
+            payment_provider_id = request.env['payment.provider'].sudo().search([
+                ('code', '=', 'sip'),
+                ('company_id', '=', sip_qr_id.company_id.id),
+                ('sip_username', '=', username),
+                ('sip_password', '=', password)
+            ], limit=1)
             if payment_provider_id:
                 # Create bank statement
                 bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('ref', '=', sip_qr_id.label)], limit=1)

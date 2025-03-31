@@ -15,12 +15,13 @@ class KyoheiSipApiMove(models.Model):
             payment_provider_id = record._get_payment_provider()
             qr_duration = payment_provider_id.sip_qr_duration
             qr_expiration_date = record.invoice_date_due  + timedelta(days=qr_duration)
+            residual_amount = record.amount_residual if self.currency_id == self.env.ref('base.BOB') else round(record.amount_residual * record._get_currency_rate(record.invoice_date), 2)
             data_dict = {
                 'alias': record.sip_reference,
                 'callback': record._get_sip_callback(),
                 'detalleGlosa': record.payment_reference,
-                'monto': record.amount_residual,
-                'moneda': record.currency_id.name,
+                'monto': residual_amount,
+                'moneda': self.env.ref('base.BOB').name,
                 'fechaVencimiento': qr_expiration_date.strftime('%d/%m/%Y'),
                 'tipoSolicitud': 'API',
                 'unicoUso': True,

@@ -41,6 +41,12 @@
                            required="code == 'sip' and state == 'enabled'"
                            invisible="state != 'enabled'"
                            password="True"/>
+                    <field name="sip_username"
+                           string="Callback username"
+                           invisible="state != 'test'"/>
+                    <field name="sip_password"
+                           string="Callback Password"
+                           invisible="state != 'test'"/>
                 </group>
                 <group invisible="code != 'sip'">
                     <field name="sip_qr_dev_apikey"
