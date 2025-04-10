@@ -33,6 +33,6 @@ Después de instalar el módulo obtendrá:
         'views/account_move_view.xml',
         'views/sip_qr_view.xml',
     ],
-    'post_init_hook': 'post_init_hook',
-    'uninstall_hook': 'uninstall_hook',
+    'kyohei_sip_api_post_init_hook': 'post_init_hook',
+    'kyohei_sip_api_uninstall_hook': 'uninstall_hook',
 }
