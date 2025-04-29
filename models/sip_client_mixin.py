@@ -24,12 +24,8 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
             currency_rate = 0
         return currency_rate
 
-    def _get_payment_provider(self):
-        return self.env['payment.provider'].sudo().search([('code', '=', 'sip'), ('company_id', '=', self.company_id.id)], limit=1)
-
-    def _get_sip_url(self):
-        payment_provider_id = self._get_payment_provider()
-        sip_url_param = 'sip_prod_url' if payment_provider_id.state == 'enabled' else 'sip_dev_url'
+    def _get_sip_url(self, payment_provider):
+        sip_url_param = 'sip_prod_url' if payment_provider.state == 'enabled' else 'sip_dev_url'
         sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
@@ -39,16 +35,15 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     def _get_sip_token(self):
         self.env['payment.provider'].search([('code', '=', 'sip')], limit=1)._get_sip_auth_token()
 
-    def _check_sip_auth_token(self):
-        payment_provider_id = self._get_payment_provider()
+    def _check_sip_auth_token(self, payment_provider):
         reason_list = []
-        if not payment_provider_id.sip_dev_username and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_username and payment_provider_id.state == 'enabled':
+        if not payment_provider.sip_dev_username and payment_provider.state == 'test' or not payment_provider.sip_prod_username and payment_provider.state == 'enabled':
             reason_list.append('Falta el "Usuario".')
-        if not payment_provider_id.sip_dev_password and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_password and payment_provider_id.state == 'enabled':
+        if not payment_provider.sip_dev_password and payment_provider.state == 'test' or not payment_provider.sip_prod_password and payment_provider.state == 'enabled':
             reason_list.append('Falta la "Contraseña".')
-        if not payment_provider_id.sip_dev_auth_apikey and payment_provider_id.state == 'test' or not payment_provider_id.sip_prod_auth_apikey and payment_provider_id.state == 'enabled':
+        if not payment_provider.sip_dev_auth_apikey and payment_provider.state == 'test' or not payment_provider.sip_prod_auth_apikey and payment_provider.state == 'enabled':
             reason_list.append('Falta el "Auth Apikey".')
-        if not payment_provider_id.sip_qr_dev_apikey and payment_provider_id.state == 'test' or not payment_provider_id.sip_qr_prod_apikey and payment_provider_id.state == 'enabled':
+        if not payment_provider.sip_qr_dev_apikey and payment_provider.state == 'test' or not payment_provider.sip_qr_prod_apikey and payment_provider.state == 'enabled':
             reason_list.append('Falta el "QR Apikey".')
         if len(reason_list) > 0:
             message_body = ''
@@ -59,14 +54,13 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                     message_body += ('\n' + '-' + reason)
             raise exceptions.ValidationError(f'Fallas de configuración API SIP:\n{message_body}')
         else:
-            if not payment_provider_id.sip_auth_duration or payment_provider_id.sip_auth_duration < datetime.now():
+            if not payment_provider.sip_auth_duration or payment_provider.sip_auth_duration < datetime.now():
                 self._get_sip_token()
 
-    def _get_sip_response(self, endpoint, server_method='get', header_dict=None, data_dict=None):
-        payment_provider_id = self._get_payment_provider()
-        self._check_sip_auth_token()
-        url = self._get_sip_url() + endpoint
-        qr_apikey = payment_provider_id.sip_qr_prod_apikey if payment_provider_id.state == 'enabled' else payment_provider_id.sip_qr_dev_apikey
+    def _get_sip_response(self, payment_provider, endpoint, server_method='get', header_dict=None, data_dict=None):
+        self._check_sip_auth_token(payment_provider)
+        url = self._get_sip_url(payment_provider) + endpoint
+        qr_apikey = payment_provider.sip_qr_prod_apikey if payment_provider.state == 'enabled' else payment_provider.sip_qr_dev_apikey
         headers = {
             'apikeyServicio': qr_apikey,
             'Content-Type': 'application/json'
@@ -89,11 +83,11 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
     def _set_payment_reference(self):
         self.sip_reference = str(uuid.uuid4())
 
-    def _enable_sip_qr(self, data_dict):
-        payment_provider_id = self._get_payment_provider()
+    def _enable_sip_qr(self, data_dict, payment_provider):
         endpoint = '/api/v1/generaQr'
-        header = {'Authorization': f'Bearer {payment_provider_id.sip_auth_token}'}
+        header = {'Authorization': f'Bearer {payment_provider.sip_auth_token}'}
         sip_qr_enable_response = self._get_sip_response(
+            payment_provider=payment_provider,
             endpoint=endpoint,
             server_method='post',
             header_dict=header,
@@ -117,9 +111,9 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                     'obfuscated_account': sip_qr['objeto']['cuentaDestino'],
                     'state': 'pendiente',
                     'source_model': self._name,
-                    'source_res_id': self.id
+                    'source_res_id': self.id,
+                    'payment_provider_id': payment_provider.id
                 })
-                qr_id._get_journal_id()
 
                 # Create attachment
                 qr_attachment = self.env['ir.attachment'].create({

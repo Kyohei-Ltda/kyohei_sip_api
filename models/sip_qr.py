@@ -36,6 +36,7 @@ class KyoheiSipApiSipQr(models.Model):
     source_res_id = fields.Char(string='ID origen')
     partner_id = fields.Many2one('res.partner', string='Cliente')
     # QR generation data
+    payment_provider_id = fields.Many2one('payment.provider', string='Proveedor de pagos')
     company_id = fields.Many2one('res.company', string='Company')
     ref = fields.Char(string='Alias')
     label = fields.Char(string='Detalle')
@@ -43,39 +44,23 @@ class KyoheiSipApiSipQr(models.Model):
     currency_id = fields.Many2one('res.currency', string='Divisa')
     date = fields.Date(string='Fecha vencimiento')
     for_single_use = fields.Boolean(string='Uso único')
-    journal_id = fields.Many2one('account.journal', string='Diario')
+    journal_id = fields.Many2one(related='payment_provider_id.journal_id', string='Diario')
     obfuscated_account = fields.Char(string='Cuenta destino')
     qr_image = fields.Binary()
 
-    def _get_journal_id(self):
-        obfuscated_account = self.obfuscated_account
-        if obfuscated_account and not self.journal_id:
-            pattern = obfuscated_account.replace("X", "_")
-            partner_bank = self.env['res.partner.bank'].search([('acc_number', "like", pattern)], limit=1)
-            journal_id = self.env['account.journal'].search([('type', "=", 'bank'), ('bank_account_id', '=', partner_bank.id)], limit=1)
-            if journal_id:
-                self.journal_id = journal_id.id
-
-    def action_get_journal_id(self):
-        for record in self:
-            record._get_journal_id()
-
-    def _get_payment_provider(self):
-        return self.env['payment.provider'].sudo().search([('code', '=', 'sip'), ('company_id', '=', self.company_id.id)], limit=1)
-
     def _get_qr_apikey(self):
-        payment_provider_id = self._get_payment_provider()
+        payment_provider_id = self.payment_provider_id
         return payment_provider_id.sip_qr_prod_apikey if payment_provider_id.state == 'enabled' else payment_provider_id.sip_qr_dev_apikey
 
     def _get_sip_url(self):
-        payment_provider_id = self._get_payment_provider()
+        payment_provider_id = self.payment_provider_id
         sip_url_param = 'sip_prod_url' if payment_provider_id.state == 'enabled' else 'sip_dev_url'
         sip_url = self.env['ir.config_parameter'].sudo().get_param(f"kyohei_sip_api.{sip_url_param}")
         return sip_url
 
     def _disable_sip_qr(self):
-        self.env['account.move']._check_sip_auth_token()
-        payment_provider_id = self._get_payment_provider()
+        payment_provider_id = self.payment_provider_id
+        self.env['account.move']._check_sip_auth_token(payment_provider_id)
         sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/inhabilitarPago'
         headers = {
@@ -104,8 +89,8 @@ class KyoheiSipApiSipQr(models.Model):
             record._disable_sip_qr()
 
     def _check_sip_state(self):
-        self.env['account.move']._check_sip_auth_token()
-        payment_provider_id = self._get_payment_provider()
+        payment_provider_id = self.payment_provider_id
+        self.env['account.move']._check_sip_auth_token(payment_provider_id)
         sip_url = self._get_sip_url()
         url = sip_url + '/api/v1/estadoTransaccion'
         headers = {

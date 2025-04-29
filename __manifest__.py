@@ -32,6 +32,7 @@ Después de instalar el módulo obtendrá:
         'security/ir.model.access.csv',
         'views/account_move_view.xml',
         'views/sip_qr_view.xml',
+        'wizards/sip_payment_provider_selector_wizard_view.xml',
     ],
     'post_init_hook': 'kyohei_sip_api_post_init_hook',
     'uninstall_hook': 'kyohei_sip_api_uninstall_hook',

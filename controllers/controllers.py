@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from odoo import http
-from odoo.http import Response, request
-from datetime import datetime
 import json
 import logging
 import pprint
+from datetime import datetime
+
 import pytz
+from odoo import http
+from odoo.http import Response, request
 
 _logger = logging.getLogger(__name__)
 
@@ -31,18 +32,11 @@ class KyoheiSipApiControllers(http.Controller):
             payment_transaction_id = request.env['payment.transaction'].sudo().search([('reference', '=',  sip_qr_id.label)], limit=1)
             if payment_transaction_id:
                 payment_transaction_id.sudo()._set_done()
-
             # Check authentication
             auth = request.httprequest.authorization
             username = auth.username
             password = auth.password
-            payment_provider_id = request.env['payment.provider'].sudo().search([
-                ('code', '=', 'sip'),
-                ('company_id', '=', sip_qr_id.company_id.id),
-                ('sip_username', '=', username),
-                ('sip_password', '=', password)
-            ], limit=1)
-            if payment_provider_id:
+            if username == sip_qr_id.payment_provider_id.sip_username and password == sip_qr_id.payment_provider_id.sip_password:
                 # Create bank statement
                 bank_statement_line_id = request.env['account.bank.statement.line'].sudo().search([('ref', '=', sip_qr_id.label)], limit=1)
                 if not bank_statement_line_id:
@@ -59,11 +53,11 @@ class KyoheiSipApiControllers(http.Controller):
                         'amount': data.get('monto'),
                         'transaction_type': 'QR SIP'
                     })
-                return Response(
-                    json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
-                    content_type='application/json;charset=utf-8',
-                    status=200
-                )
+            return Response(
+                json.dumps({"codigo": "0000", "mensaje": "Registro exitoso"}),
+                content_type='application/json;charset=utf-8',
+                status=200
+            )
         else:
             return Response(
                 json.dumps({"codigo": "9999", "mensaje": "No existe el QR en la base de datos"}),

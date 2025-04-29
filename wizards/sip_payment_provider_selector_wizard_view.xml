@@ -1,0 +1,28 @@
+<odoo>
+
+    <record model="ir.ui.view" id="kyohei_sip_api.kyohei_payment_provider_selector_wizard_form">
+        <field name="name">sip.payment.provider.selector.wizard.form</field>
+        <field name="model">sip.payment.provider.selector.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Actualizar divisas">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="payment_provider_id"/>
+                        </group>
+                        <group>
+                            <field name="move_id"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_create_sip_qr"
+                                string="Crear QR"
+                                type="object"
+                                class="btn-primary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

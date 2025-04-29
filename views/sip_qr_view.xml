@@ -25,11 +25,6 @@
             <form>
                 <header>
                     <field name="state" widget="statusbar"/>
-                    <button name="action_get_journal_id"
-                        string="Asociar diario"
-                        type="object"
-                        class="oe_highlight btn-primary"
-                        invisible="journal_id"/>
                     <button name="action_check_sip_state"
                         string="Verificar estado"
                         type="object"
@@ -69,6 +64,7 @@
                                     <field name="obfuscated_account"/>
                                 </group>
                                 <group>
+                                    <field name="payment_provider_id"/>
                                     <field name="source_model"/>
                                     <field name="source_res_id"/>
                                 </group>

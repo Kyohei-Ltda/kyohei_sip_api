@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import timedelta
 
 from odoo import _, models
 from odoo.exceptions import ValidationError
@@ -31,17 +32,20 @@ class PaymentTransaction(models.Model):
             self._set_payment_reference()
             current_date = self.last_state_change.date()
             amount = self.amount if self.currency_id == self.env.ref('base.BOB') else self.amount * self._get_currency_rate(current_date)
+            payment_provider_id = self.provider_id
+            qr_duration = payment_provider_id.sip_qr_duration
+            qr_expiration_date = current_date + timedelta(days=qr_duration)
             data_dict = {
                 'alias': self.sip_reference,
                 'callback': self._get_sip_callback(),
                 'detalleGlosa': self.reference,
                 'monto': amount,
                 'moneda': self.env.ref('base.BOB').name,
-                'fechaVencimiento': current_date.strftime('%d/%m/%Y'),
+                'fechaVencimiento': qr_expiration_date.strftime('%d/%m/%Y'),
                 'tipoSolicitud': 'API',
                 'unicoUso': True,
             }
-            self._enable_sip_qr(data_dict)
+            self._enable_sip_qr(data_dict, self.provider_id)
             if not self.sip_qr_id:
                 raise ValidationError(
                     "Pago SIP: " + _("No se pudo generar el QR inténtelo más tarde.")

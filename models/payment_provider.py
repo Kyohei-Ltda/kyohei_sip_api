@@ -16,8 +16,7 @@ class KyoheiSipApiPaymentProvider(models.Model):
 
     code = fields.Selection(
         selection_add=[('sip', 'SIP')],
-        ondelete={'sip': 'set default'},
-        copy=False)
+        ondelete={'sip': 'set default'})
 
     sip_dev_username = fields.Char(string='Dev username')
     sip_prod_username = fields.Char(string='Prod username')
