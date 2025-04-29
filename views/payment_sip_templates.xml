@@ -19,17 +19,27 @@
         </form>
     </template>
 
-    <template id="sip_payment_status" inherit_id="payment.payment_status">
+    <template id="sip_state_header" inherit_id="payment.state_header">
 
-        <xpath expr="//div[hasclass('text-bg-light', 'row', 'row-cols-1', 'row-cols-md-2', 'mx-0', 'mb-3', 'py-2', 'rounded')]" position="inside">
-            <div class="col-12 col-md-8 d-flex justify-content-center">
-                <!-- Display the binary image field here -->
-                <img
-                        t-att-src="image_data_uri(tx.sip_qr_id.qr_image)"
-                        class="mx-auto d-block"
-                        style="max-width: 400px;"
-                />
-            </div>
+        <xpath expr="//div[@id='o_payment_status_message']" position="inside">
+            <t t-if="tx.provider_id.sudo().code == 'sip'">
+                <div class="d-flex justify-content-center mt-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-2">
+                            <img t-att-src="image_data_uri(tx.sip_qr_id.qr_image)"
+                                 class="img-fluid"
+                                 style="max-width:420px; object-fit:contain;"/>
+                        </div>
+                    </div>
+                </div>
+                <small class="d-block mt-2 text-center">
+                    Scan me in your banking app
+                </small>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[@name='o_payment_status_alert']" position="attributes">
+            <attribute name="class" remove="d-flex" add="flex-grow-0"/>
         </xpath>
 
     </template>
