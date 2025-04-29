@@ -120,7 +120,7 @@ class KyoheiSipApiSipClientMixin(models.AbstractModel):
                     'datas': qr_id.qr_image,
                     'name': 'QR Pago',
                     'mimetype': 'image/png',
-                    'res_model': 'account.move',
+                    'res_model': self._name,
                     'res_id': self.id,
                 })
 
