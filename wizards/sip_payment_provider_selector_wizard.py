@@ -5,7 +5,7 @@ from datetime import timedelta
 from odoo import models, fields
 
 
-class KyoheiSipApiProviderSelectorWizard(models.Model):
+class KyoheiSipApiProviderSelectorWizard(models.TransientModel):
     _name = 'sip.payment.provider.selector.wizard'
     _description = 'Atualizador de divisas'
 
