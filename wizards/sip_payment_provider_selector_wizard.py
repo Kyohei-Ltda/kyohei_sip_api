@@ -5,8 +5,8 @@ from datetime import timedelta
 from odoo import models, fields
 
 
-class KyoheiSipApiProviderSelectorWizard(models.Model):
-    _name = 'sip.payment.provider.selector.wizard'
+class KyoheiSipApiProviderSelectorWizard(models.TransientModel):
+    _name = 'sip.provider.selector.wizard'
     _description = 'Atualizador de divisas'
 
     move_id = fields.Many2one('account.move')

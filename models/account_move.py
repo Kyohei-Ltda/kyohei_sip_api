@@ -13,7 +13,7 @@ class KyoheiSipApiMove(models.Model):
         return {
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'sip.payment.provider.selector.wizard',
+            'res_model': 'sip.provider.selector.wizard',
             'view_id': self.env.ref('kyohei_sip_api.kyohei_payment_provider_selector_wizard_form').id,
             'type': 'ir.actions.act_window',
             'target': 'new',
