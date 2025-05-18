@@ -1,8 +1,8 @@
 <odoo>
 
     <record model="ir.ui.view" id="kyohei_sip_api.kyohei_payment_provider_selector_wizard_form">
-        <field name="name">sip.payment.provider.selector.wizard.form</field>
-        <field name="model">sip.payment.provider.selector.wizard</field>
+        <field name="name">sip.provider.selector.wizard.form</field>
+        <field name="model">sip.provider.selector.wizard</field>
         <field name="arch" type="xml">
             <form string="Actualizar divisas">
                 <sheet>
