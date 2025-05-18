@@ -3,8 +3,8 @@
 from odoo.addons.payment import setup_provider, reset_payment_provider
 
 from . import controllers
-from . import models
 from . import wizards
+from . import models
 
 
 def kyohei_sip_api_post_init_hook(env):
