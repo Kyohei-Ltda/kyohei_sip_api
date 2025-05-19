@@ -75,3 +75,10 @@ class KyoheiSipApiPaymentProvider(models.Model):
                 _logger.error("Failed to get SIP token. Status code: %s, Response: %s", response.status_code, response.text)
         except Exception as e:
             _logger.exception("Exception when getting SIP token: %s", str(e))
+
+    @api.model
+    def cron_get_auth_token(self):
+        sip_providers = self.search(['&', ('code', '=', 'sip'), ('state', 'in', ['enabled', 'test'])])
+        if sip_providers:
+            for provider in sip_providers:
+                provider._get_sip_auth_token()

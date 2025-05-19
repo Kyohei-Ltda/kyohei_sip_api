@@ -24,6 +24,7 @@ Después de instalar el módulo obtendrá:
     'data': [
         'views/payment_sip_templates.xml',
         'views/payment_provider_view.xml',
+        'data/cron_data.xml',
         'data/payment_method_data.xml',
         'data/payment_provider_data.xml',
         'data/reconcile_model_data.xml',

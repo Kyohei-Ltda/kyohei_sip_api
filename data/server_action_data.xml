@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Invoices -->
     <record id="get_sip_token_server_action" model="ir.actions.server">
         <field name="name">Get sip token</field>
         <field name="model_name">payment.provider</field>
